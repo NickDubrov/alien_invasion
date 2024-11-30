@@ -3,6 +3,7 @@ import pygame
 
 from time import sleep
 
+from button import Button
 from settings import Settings
 from game_stats import GameStats
 from ship import Ship
@@ -31,8 +32,11 @@ class AlienInvasion:
 
         self._create_fleet()
 
-        # Игра Alien Invasion запускается в активном состоянии.
-        self.game_active = True
+        # Создание кнопки Play.
+        self.play_button = Button(self, "Play")
+
+        # Игра запускается в неактивном состоянии.
+        self.game_active = False
 
     def run_game(self):
         """Запуск основного цикла игры."""
@@ -49,12 +53,34 @@ class AlienInvasion:
     def _check_events(self):
         """Обрабатывает нажатия клавиш и события мыши."""
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
+            elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
             elif event.type == pygame.QUIT:
                 sys.exit()
+
+    def _check_play_button(self, mouse_pos):
+        """Запускает новую игру при нажатии кнопки Play."""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.game_active:
+            # Сброс игровой статистики.
+            self.stats.reset_stats()
+            self.game_active = True
+
+            # Очистка списков пришельцев и снарядов.
+            self.aliens.empty()
+            self.bullets.empty()
+
+            # Создание нового флота и размещение корабля в центре.
+            self._create_fleet()
+            self.ship.center_ship()
+
+            # Указатель мыши скрывается.
+            pygame.mouse.set_visible(False)
 
     def _check_keydown_events(self, event):
         """Реагирует на нажатие клавиш."""
@@ -92,6 +118,7 @@ class AlienInvasion:
             sleep(1.5)
         else:
             self.game_active = False
+            pygame.mouse.set_visible(True)
 
     def _create_alien(self, alien_number, row_number):
         """Создание пришельца и размещение его в ряду."""
@@ -158,9 +185,10 @@ class AlienInvasion:
 
     def _fire_bullet(self):
         """Создание нового снаряда и включение его в группу bullets."""
-        if len(self.bullets) < self.settings.bullets_allowed:
-            new_bullet = Bullet(self)
-            self.bullets.add(new_bullet)
+        if self.game_active:
+            if len(self.bullets) < self.settings.bullets_allowed:
+                new_bullet = Bullet(self)
+                self.bullets.add(new_bullet)
 
     def _update_bullets(self):
         """Обновляет позиции снарядов и уничтожает старые снаряды."""
@@ -192,6 +220,10 @@ class AlienInvasion:
         self.aliens.draw(self.screen)
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+
+        # Кнопка Play отображается в том случае, если игра неактивна.
+        if not self.game_active:
+            self.play_button.draw_button()
 
         pygame.display.flip()
 
