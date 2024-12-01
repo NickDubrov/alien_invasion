@@ -1,5 +1,6 @@
 import sys
 import pygame
+import json
 
 from time import sleep
 
@@ -63,7 +64,7 @@ class AlienInvasion:
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
             elif event.type == pygame.QUIT:
-                sys.exit()
+                self._close_game()
 
     def _check_play_button(self, mouse_pos):
         """Запускает новую игру при нажатии кнопки Play."""
@@ -82,7 +83,7 @@ class AlienInvasion:
         elif event.key == pygame.K_p and not self.game_active:
             self._start_game()
         elif event.key == pygame.K_q:
-            sys.exit()
+            self._close_game()
 
     def _check_keyup_events(self, event):
         """Реагирует на отпускание клавиш."""
@@ -111,6 +112,14 @@ class AlienInvasion:
 
         # Указатель мыши скрывается.
         pygame.mouse.set_visible(False)
+
+    def _close_game(self):
+        """Сохраняет рекорд в текстовый файл."""
+        filename = 'high_score.json'
+        with open(filename, 'w') as f:
+            json.dump(round(self.stats.high_score, -1), f)
+
+        sys.exit()
 
     def _ship_hit(self):
         """Обрабатывает столкновение корабля с пришельцем."""
@@ -224,6 +233,7 @@ class AlienInvasion:
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
+            self.sb.check_high_score()
 
         if not self.aliens:
             # Уничтожение существующих снарядов и создание нового флота.
