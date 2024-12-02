@@ -19,7 +19,10 @@ class Scoreboard():
         self.text_color = (30, 30, 30)
         self.font = pygame.font.SysFont(None, 48)
 
-        # Подготовка изображений счетов.
+        self.prep_images()
+
+    def prep_images(self):
+        """ Подготовка изображений счетов."""
         self.prep_score()
         self.prep_high_score()
         self.prep_level()

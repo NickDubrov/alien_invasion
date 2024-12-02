@@ -19,8 +19,10 @@ class AlienInvasion:
     def __init__(self):
         """Инициализирует игру и создает игровые ресурсы."""
         pygame.init()
+        self.clock = pygame.time.Clock()
         self.settings = Settings()
 
+        # Игра запускается в оконном режиме.
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Alien Invasion")
@@ -52,6 +54,7 @@ class AlienInvasion:
                 self._update_bullets()
 
             self._update_screen()
+            self.clock.tick(90)
 
     def _check_events(self):
         """Обрабатывает нажатия клавиш и события мыши."""
@@ -99,9 +102,7 @@ class AlienInvasion:
 
         # Сброс игровой статистики.
         self.stats.reset_stats()
-        self.sb.prep_score()
-        self.sb.prep_level()
-        self.sb.prep_ships()
+        self.sb.prep_images()
         self.game_active = True
 
         # Очистка списков пришельцев и снарядов.
@@ -114,6 +115,17 @@ class AlienInvasion:
 
         # Указатель мыши скрывается.
         pygame.mouse.set_visible(False)
+
+    def _start_new_level(self):
+        """Начало нового уровня"""
+        # Уничтожение снарядов, повышение скорости и создание нового флота.
+        self.bullets.empty()
+        self.settings.increase_speed()
+        self._create_fleet()
+
+        # Увеличение уровня.
+        self.stats.level += 1
+        self.sb.prep_level()
 
     def _close_game(self):
         """Сохраняет рекорд в текстовый файл."""
@@ -239,14 +251,7 @@ class AlienInvasion:
             self.sb.check_high_score()
 
         if not self.aliens:
-            # Уничтожение существующих снарядов и создание нового флота.
-            self.bullets.empty()
-            self.settings.increase_speed()
-            self._create_fleet()
-
-            # Увеличение уровня.
-            self.stats.level += 1
-            self.sb.prep_level()
+            self._start_new_level()
 
     def _update_screen(self):
         """Обновляет изображения на экране и отображает новый экран."""
