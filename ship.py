@@ -21,6 +21,7 @@ class Ship(Sprite):
 
         # Сохранение вещественной координаты центра корабля.
         self.x = float(self.rect.x)
+
         # Флаги перемещения
         self.moving_right = False
         self.moving_left = False
